@@ -18,6 +18,7 @@
  * \author Jan Issac (jan.issac@gmail.com)
  */
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <dbot_ros/util/ros_interface.h>
 #include <dbot_ros_msgs/ObjectState.h>
 
@@ -31,7 +32,7 @@ void ri::publish_marker(const geometry_msgs::PoseStamped& pose_stamped,
                         const float& a,
                         const std::string& ns)
 {
-    visualization_msgs::Marker marker;
+    visualization_msgs::Marker marker, arrmarker;
 
     marker.pose = pose_stamped.pose;
 
@@ -53,4 +54,57 @@ void ri::publish_marker(const geometry_msgs::PoseStamped& pose_stamped,
     marker.action = visualization_msgs::Marker::ADD;
 
     pub.publish(marker);
+
+
+
+
+    arrmarker.header.frame_id = pose_stamped.header.frame_id;
+    arrmarker.header.stamp    = pose_stamped.header.stamp;
+    arrmarker.ns              = ns + "_orientation_arrows";;
+    arrmarker.id              = marker_id;
+
+
+    arrmarker.type = visualization_msgs::Marker::ARROW;
+    arrmarker.action = visualization_msgs::Marker::ADD;
+    arrmarker.scale.x = .01;
+    arrmarker.scale.y = .02;
+    arrmarker.scale.z = 0;
+    arrmarker.color.r = 0;
+    arrmarker.color.b = 0;
+    arrmarker.color.g = 1;
+    arrmarker.color.a = 1;
+
+    //// 45deg in each direction
+    //double angle = 0.79; // ~45deg
+	//tf2::Quaternion marker_rot, arrow_rot;
+	//arrow_rot.setRPY(0, -angle, angle);
+	//tf2::fromMsg(marker.pose.orientation, marker_rot);
+	//arrow_rot = arrow_rot * marker_rot;
+	//arrow_rot.normalize();
+
+    //marker.pose.orientation = tf2::toMsg(arrow_rot);
+
+    //pub.publish(marker);
+
+	// 45deg in each direction
+	tf2::Quaternion marker_rot;
+	tf2::Vector3 vec(0.2,0.2,0.2);
+	tf2::Vector3 start_point, end_point;
+
+	tf2::fromMsg(marker.pose.orientation, marker_rot);
+	tf2::fromMsg(marker.pose.position, start_point);
+	tf2::Transform trans(marker_rot);
+
+	vec = trans * vec;
+	end_point = start_point + vec;
+
+	geometry_msgs::Point gm_end;
+	tf2::toMsg(end_point, gm_end);
+
+	arrmarker.points.clear();
+	arrmarker.points.push_back(marker.pose.position);
+	arrmarker.points.push_back(gm_end);
+
+    pub.publish(arrmarker);
+
 }

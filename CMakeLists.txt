@@ -44,6 +44,7 @@ find_package(catkin REQUIRED
   dbot
   dbot_ros_msgs
   interactive_markers
+  tf2_geometry_msgs
   )
 
 set(PROJECT_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
